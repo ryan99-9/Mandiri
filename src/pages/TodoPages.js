@@ -1,43 +1,75 @@
-// export default App;
 import React from "react"
 import {
   FormControl,
   Button
 } from 'react-bootstrap'
-//import component
-import ToDoItem from '../component/ToDoItem'
-import { getData,deleteData,completedData,addData } from '../redux/actions'
-import { connect } from 'react-redux'
+import Axios from 'axios'
+import './style.css'
+import { back } from '../Asset/index'
 
-
+const API = 'http://localhost:2000/activities/'
 
 class TodoPages extends React.Component {
-  fetchData = () => {
-    this.props.getData()
+  constructor(props) {
+    super(props)
+    this.state = {
+      list: []
+    }
   }
+  // UNSAFE_componentWillMount() {
+
+  //   alert('ini will mount')
+  // }
 
   componentDidMount() {
-    this.fetchData()
+    Axios.get(`${API}`)
+      .then(res => {
+        console.log(res.data)
+        this.setState({ list: res.data })
+      })
+      .catch(error => {
+        console.log(error + 'ini eror get list redzone');
+      });
   }
 
   onDelete = (id) => {
-    this.props.deleteData(id)
+    Axios.delete(`${API}${id}`)
+      .then(res => {
+        Axios.get(`${API}`)
+          .then(res => {
+            this.setState({ list: res.data })
+          })
+      })
   }
 
   onComplete = (id) => {
-    this.props.completedData(id)
+    Axios.patch(`${API}${id}`, { isCompleted: true })
+      .then(res => {
+        Axios.get(`${API}`)
+          .then(res => {
+            this.setState({ list: res.data })
+          })
+      })
   }
 
   showData = () => {
     return (
-      this.props.listActivity.map(item => {
-        return (<ToDoItem
-          ayam={item}
-          key={item.id}
-          delete={() => this.onDelete(item.id)}
-          complete={() => this.onComplete(item.id)}
-        />)
+      this.state.list.map((item, index) => {
+        return (
+          <div className="contain">
+            <p> {index + 1}. {item.name}</p>
+            <div>
+              <Button variant="success" onClick={() => this.onDelete(item.id)} className="me-2 btn">Delete</Button>
+              <Button variant="primary" onClick={() => this.onComplete(item.id)} className="btn"
+                disabled={item.isCompleted}
+              >
+                {item.isCompleted ? "Finished" : "Completed"}
+              </Button>
+            </div>
+          </div>
+        )
       })
+
     )
   }
 
@@ -48,41 +80,40 @@ class TodoPages extends React.Component {
       name: newTodo,
       isCompleted: false
     }
-    this.props.addData(obj)
-
+    Axios.post(`${API}`, obj)
+      .then(res => {
+        Axios.get(`${API}`)
+          .then(res => {
+            this.setState({ list: res.data })
+          })
+      })
     this.refs.todo.value = ''
   }
 
 
   render() {
+    // alert('ini render')
+    console.log(this.state.list);
     return (
-      <div style={styles.container}>
-        <h1>To Do List</h1>
-        {this.showData()}
-        <div style={styles.input}>
-          <FormControl
-            placeholder="Input New Todo"
-            ref="todo"
-          />
-          <Button variant="info" onClick={this.onAdd} classname="ml-2">Add</Button>
+      <div className="layer-page">
+        <div className="nav"> <h2 style={{ paddingLeft: '2rem',paddingTop:'0.5rem', color:'white' }}>TO DO LIST APP</h2> <h3 style={{ paddingRight: '2rem',paddingTop:'0.5rem',color:'white' }}>You have {this.state.list.length} to do items</h3></div>
+        <div className="page">
+          <div className="list"><h1>To Do List</h1>
+            {this.showData()}
+            <div className="input">
+              <FormControl
+                placeholder="Input New Todo"
+                ref="todo"
+              />
+              <Button variant="info" onClick={this.onAdd} classname="ml-2">Add</Button>
+            </div>
+          </div>
+          <div><img src={back} /></div>
         </div>
+
       </div>
     )
   }
 }
-const styles = {
-  container: {
-    padding: '15px'
-  },
-  input: {
-    width: '25vw',
-    display: 'flex'
-  }
-}
 
-const mapStateToProps = (state) => {
-  return {
-    listActivity: state.todo.activities,
-  }
-}
-export default connect(mapStateToProps, { getData,deleteData,completedData,addData })(TodoPages)
+export default TodoPages

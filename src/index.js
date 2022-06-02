@@ -5,20 +5,22 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 // import App from './App';
 // import reportWebVitals from './reportWebVitals';
 
-import App from './app'
 
-import { createStore,applyMiddleware } from 'redux'
+
+// import { createStore,applyMiddleware } from 'redux'
 import { Provider } from 'react-redux'
-import allReducer from './redux/reducers'
-import ReduxThunk from 'redux-thunk'
+// import allReducer from './redux/reducers'
+// import ReduxThunk from 'redux-thunk'
+import App from './App';
 
-let globalState = createStore(allReducer,applyMiddleware(ReduxThunk))
+// let globalState = createStore(allReducer,applyMiddleware(ReduxThunk))
 
 
 ReactDOM.render(
-    <Provider store={globalState}>
-        <App />
-    </Provider>,
+    <App />,
+//    <Provider>
+        
+//     </Provider>,
     document.getElementById('root')
 )
 
